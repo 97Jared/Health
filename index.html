@@ -1251,9 +1251,6 @@
 function initApp() {
     // Set up event listeners
     setupEventListeners();
-    
-    // Load the Google API client
-    loadGoogleClient();
 }
 
 function loadGoogleClient() {
@@ -1315,10 +1312,6 @@ function handleTokenResponse(tokenResponse) {
 
         // Set up event listeners
         function setupEventListeners() {
-            // Auth button
-            authButton.addEventListener('click', () => {
-                google.accounts.id.prompt();
-            });
             
             // Logout button
             logoutButton.addEventListener('click', () => {
