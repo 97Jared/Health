@@ -1152,8 +1152,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <!-- Google API Client Library -->
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <!-- Replace your current script tags with these -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+  // This ensures GAPI is loaded before we try to use it
+  function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+  }
+</script>
+<script src="https://apis.google.com/js/api.js?onload=gapiLoaded"></script>
 
     <!-- Application JavaScript -->
     <script>
@@ -1240,66 +1247,71 @@
         const quickMoodScore = document.getElementById('quickMoodScore');
         const quickMoodScoreDisplay = document.getElementById('quickMoodScoreDisplay');
 
-        // Initialize the application
-        function initApp() {
-            // Set up event listeners
-            setupEventListeners();
-            
-            // Initialize Google API client
-            gapi.load('client', initGoogleClient);
-        }
+// Replace your current auth code with this updated version
+function initApp() {
+    // Set up event listeners
+    setupEventListeners();
+    
+    // Load the Google API client
+    loadGoogleClient();
+}
 
-// Replace this section in your JavaScript
-function initGoogleClient() {
+function loadGoogleClient() {
+    // Load the necessary Google API libraries
+    const script1 = document.createElement('script');
+    script1.src = 'https://accounts.google.com/gsi/client';
+    script1.async = true;
+    script1.defer = true;
+    script1.onload = initializeGsi;
+    document.body.appendChild(script1);
+    
+    // Also load the gapi client for interacting with Google APIs
+    gapi.load('client', initializeGapiClient);
+}
+
+async function initializeGapiClient() {
     try {
-        gapi.client.init({
+        await gapi.client.init({
             apiKey: API_KEY,
             discoveryDocs: [DISCOVERY_DOC]
-        }).then(() => {
-            // Initialize Google Identity Services with proper configuration
-            google.accounts.id.initialize({
-                client_id: CLIENT_ID,
-                callback: handleCredentialResponse,
-                auto_select: false, // Don't auto-select accounts
-                cancel_on_tap_outside: true // Allow canceling by clicking outside
-            });
-
-            // Use the new Google Identity Services prompt
-            authButton.addEventListener('click', () => {
-                google.accounts.oauth2.initCodeClient({
-                    client_id: CLIENT_ID,
-                    scope: SCOPES,
-                    callback: handleCredentialResponse
-                }).requestCode();
-            });
         });
+        console.log("GAPI client initialized");
     } catch (error) {
-        console.error('Error initializing Google API client:', error);
+        console.error('Error initializing GAPI client:', error);
     }
 }
 
-        // Handle Google Identity Services credential response
-        function handleCredentialResponse(response) {
-            if (response.credential) {
-                handleAuthSuccess(response);
-            }
-        }
+function initializeGsi() {
+    // Configure the Sign In With Google button
+    authButton.addEventListener('click', () => {
+        // Create and render a sign in button
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: handleTokenResponse
+        });
+        
+        // Prompt the user to select a Google Account and ask for consent
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    });
+}
 
-        // Handle successful authentication
-        function handleAuthSuccess(authResult) {
-            if (authResult && !authResult.error) {
-                // Store token in localStorage
-                if (authResult.access_token) {
-                    localStorage.setItem('health_tracker_token', authResult.access_token);
-                }
-                
-                state.isAuthenticated = true;
-                showApp();
-                loadUserData();
-            } else {
-                console.error('Authentication failed:', authResult.error);
-            }
-        }
+function handleTokenResponse(tokenResponse) {
+    if (tokenResponse && tokenResponse.access_token) {
+        // Store token in localStorage
+        localStorage.setItem('health_tracker_token', tokenResponse.access_token);
+        
+        // Set auth token for GAPI client
+        gapi.client.setToken(tokenResponse);
+        
+        // Update state and UI
+        state.isAuthenticated = true;
+        showApp();
+        loadUserData();
+    } else {
+        console.error('Failed to get access token');
+    }
+}
 
         // Set up event listeners
         function setupEventListeners() {
