@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --primary-light: #a9c2f5;
+            --secondary-color: #0F9D58;
+            --accent-color: #F4B400;
+            --danger-color: #DB4437;
+            --text-color: #333;
+            --light-bg: #f7f9fc;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --header-height: 60px;
+            --sidebar-width: 240px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-select {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: white;
+            color: var(--text-color);
+            border: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            margin-top: var(--header-height);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: calc(100% - var(--header-height));
+            overflow-y: auto;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar-menu a:hover {
+            background-color: var(--light-bg);
+        }
+
+        .sidebar-menu a.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .card-action {
+            color: var(--primary-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-action i {
+            margin-left: 5px;
+        }
+
+        /* Quick Log Section */
+        .quick-log {
+            margin-bottom: 30px;
+        }
+
+        .quick-log-title {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .log-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .log-btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s;
+        }
+
+        .log-btn:hover {
+            opacity: 0.9;
+        }
+
+        .log-btn i {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        .log-weight {
+            background-color: var(--primary-color);
+        }
+
+        .log-meal {
+            background-color: var(--secondary-color);
+        }
+
+        .log-mood {
+            background-color: var(--accent-color);
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Charts */
+        .chart-container {
+            height: 200px;
+            margin-top: 10px;
+        }
+
+        /* Forms */
+        .form-section {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .form-title {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #eee;
+            color: var(--text-color);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Loading Indicator */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Health Metrics */
+        .metric-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: #eee;
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            background-color: var(--secondary-color);
+            height: 10px;
+            border-radius: 10px;
+            width: 0%;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transition: width 0.3s;
+            }
+
+            .sidebar.active {
+                width: var(--sidebar-width);
+            }
+
+            .main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s;
+            }
+
+            .main-content.sidebar-active {
+                margin-left: var(--sidebar-width);
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .section-title {
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 1.8rem;
+        }
+
+        /* Auth Screen */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--light-bg);
+        }
+
+        .auth-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .auth-title {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .auth-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .auth-btn:hover {
+            background-color: #3367d6;
+        }
+
+        /* Badge for status indicators */
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .badge-success {
+            background-color: var(--secondary-color);
+        }
+
+        .badge-warning {
+            background-color: var(--accent-color);
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="loading" id="loadingIndicator">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Auth Screen (Initially Visible) -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Health Tracker</h1>
+            <p>Track your health metrics, nutrition, and mood in one place.</p>
+            <button id="authButton" class="auth-btn">
+                <i class="fas fa-sign-in-alt"></i> Connect to Google Sheets
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App (Initially Hidden) -->
+    <div id="appContainer" style="display: none;">
+        <!-- Header -->
+        <header>
+            <button id="mobileMenuToggle" class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <i class="fas fa-heartbeat"></i>
+                <span>Health Tracker</span>
+            </div>
+            <div class="user-nav">
+                <select id="userSelect" class="user-select">
+                    <option value="1">User 1</option>
+                    <option value="2">User 2</option>
+                </select>
+                <button id="logoutButton" class="log-btn" style="background: none; padding: 0;">
+                    <i class="fas fa-sign-out-alt" style="color: white;"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <div class="container">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#weight" class="nav-link" data-section="weight">
+                            <i class="fas fa-weight"></i> Weight
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#meals" class="nav-link" data-section="meals">
+                            <i class="fas fa-utensils"></i> Meals
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#mood" class="nav-link" data-section="mood">
+                            <i class="fas fa-smile"></i> Mood
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#goals" class="nav-link" data-section="goals">
+                            <i class="fas fa-bullseye"></i> Goals
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#settings" class="nav-link" data-section="settings">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content" id="mainContent">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="page-section active">
+                    <h1 class="section-title">Dashboard</h1>
+
+                    <!-- Quick Log Section -->
+                    <div class="quick-log">
+                        <h2 class="quick-log-title">Quick Log</h2>
+                        <div class="log-buttons">
+                            <button class="log-btn log-weight" id="quickLogWeight">
+                                <i class="fas fa-weight"></i> Log Weight
+                            </button>
+                            <button class="log-btn log-meal" id="quickLogMeal">
+                                <i class="fas fa-utensils"></i> Log Meal
+                            </button>
+                            <button class="log-btn log-mood" id="quickLogMood">
+                                <i class="fas fa-smile"></i> Log Mood
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Grid -->
+                    <div class="dashboard-grid">
+                        <!-- Weight Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Weight Trend</h3>
+                                <button class="card-action" id="viewWeightBtn">
+                                    View All <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <div class="chart-container" id="weightChart">
+                                <!-- Weight chart will be rendered here -->
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">Current:</span>
+                                <span class="metric-value" id="currentWeight">Loading...</span>
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">BMI:</span>
+                                <span class="metric-value" id="currentBMI">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Nutrition Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Today's Nutrition</h3>
+                                <button class="card-action" id="viewMealsBtn">
+                                    View All <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">Calories:</span>
+                                <span class="metric-value" id="todayCalories">Loading...</span>
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">Protein:</span>
+                                <span class="metric-value" id="todayProtein">Loading...</span>
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">Carbs:</span>
+                                <span class="metric-value" id="todayCarbs">Loading...</span>
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">Fat:</span>
+                                <span class="metric-value" id="todayFat">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Mood Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Recent Mood</h3>
+                                <button class="card-action" id="viewMoodBtn">
+                                    View All <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <div class="chart-container" id="moodChart">
+                                <!-- Mood chart will be rendered here -->
+                            </div>
+                            <div class="metric-container">
+                                <span class="metric-label">Today:</span>
+                                <span class="metric-value" id="todayMood">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Goals Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Goals Progress</h3>
+                                <button class="card-action" id="viewGoalsBtn">
+                                    View All <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            <div id="goalsContainer">
+                                <!-- Goals will be displayed here -->
+                                <p>Loading goals...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Entries -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Entries</h3>
+                        </div>
+                        <table class="data-table" id="recentEntriesTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3">Loading recent entries...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Weight Section -->
+                <section id="weight" class="page-section">
+                    <h1 class="section-title">Weight Tracking</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Log New Weight</h3>
+                        </div>
+                        <form id="weightForm" class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="weightDate">Date</label>
+                                    <input type="date" id="weightDate" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="weightValue">Weight (kg)</label>
+                                    <input type="number" id="weightValue" class="form-control" step="0.1" min="20" max="250" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="weightNotes">Notes (optional)</label>
+                                <textarea id="weightNotes" class="form-control" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Weight Entry</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Weight History</h3>
+                        </div>
+                        <div class="chart-container" id="weightHistoryChart" style="height: 300px;">
+                            <!-- Weight history chart will be rendered here -->
+                        </div>
+                        <table class="data-table" id="weightHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Weight (kg)</th>
+                                    <th>BMI</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4">Loading weight history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Meals Section -->
+                <section id="meals" class="page-section">
+                    <h1 class="section-title">Meal Tracking</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Log New Meal</h3>
+                        </div>
+                        <form id="mealForm" class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mealDate">Date</label>
+                                    <input type="date" id="mealDate" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealTime">Time</label>
+                                    <input type="time" id="mealTime" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealType">Meal Type</label>
+                                    <select id="mealType" class="form-control" required>
+                                        <option value="Breakfast">Breakfast</option>
+                                        <option value="Lunch">Lunch</option>
+                                        <option value="Dinner">Dinner</option>
+                                        <option value="Snack">Snack</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="foodItem">Food Item</label>
+                                <input type="text" id="foodItem" class="form-control" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="quantity">Quantity</label>
+                                    <input type="number" id="quantity" class="form-control" step="0.1" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="unit">Unit</label>
+                                    <input type="text" id="unit" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="calories">Calories</label>
+                                    <input type="number" id="calories" class="form-control" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="protein">Protein (g)</label>
+                                    <input type="number" id="protein" class="form-control" step="0.1" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="carbs">Carbs (g)</label>
+                                    <input type="number" id="carbs" class="form-control" step="0.1" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fat">Fat (g)</label>
+                                    <input type="number" id="fat" class="form-control" step="0.1" min="0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="mealNotes">Notes (optional)</label>
+                                <textarea id="mealNotes" class="form-control" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Meal Entry</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Meals</h3>
+                        </div>
+                        <table class="data-table" id="mealsHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Meal</th>
+                                    <th>Food</th>
+                                    <th>Calories</th>
+                                    <th>Protein</th>
+                                    <th>Carbs</th>
+                                    <th>Fat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7">Loading meal history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Mood Section -->
+                <section id="mood" class="page-section">
+                    <h1 class="section-title">Mood Tracking</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Log New Mood</h3>
+                        </div>
+                        <form id="moodForm" class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="moodDate">Date</label>
+                                    <input type="date" id="moodDate" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="moodTime">Time</label>
+                                    <input type="time" id="moodTime" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="moodScore">Mood (1-10)</label>
+                                    <input type="range" id="moodScore" class="form-control" min="1" max="10" step="1" required>
+                                    <div id="moodScoreDisplay" style="text-align: center; margin-top: 5px;">5</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="energyLevel">Energy (1-10)</label>
+                                    <input type="range" id="energyLevel" class="form-control" min="1" max="10" step="1" required>
+                                    <div id="energyLevelDisplay" style="text-align: center; margin-top: 5px;">5</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="stressLevel">Stress (1-10)</label>
+                                    <input type="range" id="stressLevel" class="form-control" min="1" max="10" step="1" required>
+                                    <div id="stressLevelDisplay" style="text-align: center; margin-top: 5px;">5</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sleepHours">Sleep Hours</label>
+                                <input type="number" id="sleepHours" class="form-control" step="0.5" min="0" max="24" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="moodNotes">Notes (optional)</label>
+                                <textarea id="moodNotes" class="form-control" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Mood Entry</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Mood History</h3>
+                        </div>
+                        <div class="chart-container" id="moodHistoryChart" style="height: 300px;">
+                            <!-- Mood history chart will be rendered here -->
+                        </div>
+                        <table class="data-table" id="moodHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Mood</th>
+                                    <th>Energy</th>
+                                    <th>Stress</th>
+                                    <th>Sleep</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7">Loading mood history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Goals Section -->
+                <section id="goals" class="page-section">
+                    <h1 class="section-title">Goals</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Add New Goal</h3>
+                        </div>
+                        <form id="goalForm" class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="goalCategory">Category</label>
+                                    <select id="goalCategory" class="form-control" required>
+                                        <option value="Weight">Weight</option>
+                                        <option value="Exercise">Exercise</option>
+                                        <option value="Nutrition">Nutrition</option>
+                                        <option value="Sleep">Sleep</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="goalStartDate">Start Date</label>
+                                    <input type="date" id="goalStartDate" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="goalTargetDate">Target Date</label>
+                                    <input type="date" id="goalTargetDate" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="goalDescription">Goal Description</label>
+                                <input type="text" id="goalDescription" class="form-control" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="goalTargetValue">Target Value</label>
+                                    <input type="number" id="goalTargetValue" class="form-control" step="0.1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="goalCurrentValue">Current Value</label>
+                                    <input type="number" id="goalCurrentValue" class="form-control" step="0.1" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Goal</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Active Goals</h3>
+                        </div>
+                        <div id="activeGoalsContainer">
+                            <!-- Active goals will be displayed here -->
+                            <p>Loading goals...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Completed Goals</h3>
+                        </div>
+                        <table class="data-table" id="completedGoalsTable">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Target</th>
+                                    <th>Achieved</th>
+                                    <th>Completion Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5">Loading completed goals...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings" class="page-section">
+                    <h1 class="section-title">Settings</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">User Profile</h3>
+                        </div>
+                        <form id="profileForm" class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="userName">Name</label>
+                                    <input type="text" id="userName" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="userEmail">Email</label>
+                                    <input type="email" id="userEmail" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="userGender">Gender</label>
+                                    <select id="userGender" class="form-control">
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                        <option value="O">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="userHeight">Height (cm)</label>
+                                    <input type="number" id="userHeight" class="form-control" step="0.1" min="100" max="250" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="userBirthDate">Birth Date</label>
+                                    <input type="date" id="userBirthDate" class="form-control">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Profile</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">App Settings</h3>
+                        </div>
+                        <form id="appSettingsForm" class="form-section">
+                            <div class="form-group">
+                                <label for="weightUnit">Weight Unit</label>
+                                <select id="weightUnit" class="form-control">
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="lb">Pounds (lb)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Weight Log Modal -->
+    <div class="modal" id="quickWeightModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeWeightModal">&times;</span>
+            <h2>Quick Weight Log</h2>
+            <form id="quickWeightForm" class="form-section">
+                <div class="form-group">
+                    <label for="quickWeightValue">Weight (kg)</label>
+                    <input type="number" id="quickWeightValue" class="form-control" step="0.1" min="20" max="250" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Meal Log Modal -->
+    <div class="modal" id="quickMealModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeMealModal">&times;</span>
+            <h2>Quick Meal Log</h2>
+            <form id="quickMealForm" class="form-section">
+                <div class="form-group">
+                    <label for="quickMealType">Meal Type</label>
+                    <select id="quickMealType" class="form-control" required>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quickFoodItem">Food Item</label>
+                    <input type="text" id="quickFoodItem" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="quickCalories">Calories</label>
+                    <input type="number" id="quickCalories" class="form-control" min="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mood Log Modal -->
+    <div class="modal" id="quickMoodModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeMoodModal">&times;</span>
+            <h2>Quick Mood Log</h2>
+            <form id="quickMoodForm" class="form-section">
+                <div class="form-group">
+                    <label for="quickMoodScore">Mood (1-10)</label>
+                    <input type="range" id="quickMoodScore" class="form-control" min="1" max="10" step="1" required>
+                    <div id="quickMoodScoreDisplay" style="text-align: center; margin-top: 5px;">5</div>
+                </div>
+                <div class="form-group">
+                    <label for="quickMoodNotes">Notes (optional)</label>
+                    <textarea id="quickMoodNotes" class="form-control" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Google Charts Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- Google API Client Library -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+
+    <!-- Application JavaScript -->
+    <script>
+        // Constants
+        const API_KEY = 'YOUR_API_KEY'; // Replace with your Google API Key
+        const CLIENT_ID = 'YOUR_CLIENT_ID'; // Replace with your Google Client ID
+        const SPREADSHEET_ID = '10Yf11bGk4pxiSSxNtQZkdRZh7NlpQEozkNOoedHnTKq4JzO6Q'; // Your Google Sheet ID
+        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+        const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+
+        // Global app state
+        const state = {
+            currentUser: 1,
+            isAuthenticated: false,
+            userData: null,
+            weightData: [],
+            mealsData: [],
+            moodData: [],
+            goalsData: []
+        };
+
+        // DOM Elements
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const authScreen = document.getElementById('authScreen');
+        const appContainer = document.getElementById('appContainer');
+        const authButton = document.getElementById('authButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const userSelect = document.getElementById('userSelect');
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageSections = document.querySelectorAll('.page-section');
+
+        // Charts
+        let weightChart = null;
+        let moodChart = null;
+        let weightHistoryChart = null;
+        let moodHistoryChart = null;
+
+        // Form elements
+        const forms = {
+            weight: document.getElementById('weightForm'),
+            quickWeight: document.getElementById('quickWeightForm'),
+            meal: document.getElementById('mealForm'),
+            quickMeal: document.getElementById('quickMealForm'),
+            mood: document.getElementById('moodForm'),
+            quickMood: document.getElementById('quickMoodForm'),
+            goal: document.getElementById('goalForm'),
+            profile: document.getElementById('profileForm'),
+            appSettings: document.getElementById('appSettingsForm')
+        };
+
+        // Modals
+        const modals = {
+            quickWeight: document.getElementById('quickWeightModal'),
+            quickMeal: document.getElementById('quickMealModal'),
+            quickMood: document.getElementById('quickMoodModal')
+        };
+
+        // Modal triggers
+        const quickLogWeight = document.getElementById('quickLogWeight');
+        const quickLogMeal = document.getElementById('quickLogMeal');
+        const quickLogMood = document.getElementById('quickLogMood');
+
+        // Modal close buttons
+        const closeWeightModal = document.getElementById('closeWeightModal');
+        const closeMealModal = document.getElementById('closeMealModal');
+        const closeMoodModal = document.getElementById('closeMoodModal');
+
+        // View buttons
+        const viewWeightBtn = document.getElementById('viewWeightBtn');
+        const viewMealsBtn = document.getElementById('viewMealsBtn');
+        const viewMoodBtn = document.getElementById('viewMoodBtn');
+        const viewGoalsBtn = document.getElementById('viewGoalsBtn');
+
+        // Sliders
+        const moodScore = document.getElementById('moodScore');
+        const moodScoreDisplay = document.getElementById('moodScoreDisplay');
+        const energyLevel = document.getElementById('energyLevel');
+        const energyLevelDisplay = document.getElementById('energyLevelDisplay');
+        const stressLevel = document.getElementById('stressLevel');
+        const stressLevelDisplay = document.getElementById('stressLevelDisplay');
+        const quickMoodScore = document.getElementById('quickMoodScore');
+        const quickMoodScoreDisplay = document.getElementById('quickMoodScoreDisplay');
+
+        // Initialize the application
+        function initApp() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize Google API client
+            gapi.load('client', initGoogleClient);
+        }
+
+        // Initialize Google API client
+        async function initGoogleClient() {
+            try {
+                await gapi.client.init({
+                    apiKey: API_KEY,
+                    discoveryDocs: [DISCOVERY_DOC]
+                });
+                
+                // Initialize Google Identity Services
+                google.accounts.id.initialize({
+                    client_id: CLIENT_ID,
+                    callback: handleCredentialResponse
+                });
+                
+                // Check if user is already authenticated
+                if (localStorage.getItem('health_tracker_token')) {
+                    // Attempt to use stored token
+                    handleAuthSuccess({
+                        access_token: localStorage.getItem('health_tracker_token')
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing Google API client:', error);
+            }
+        }
+
+        // Handle Google Identity Services credential response
+        function handleCredentialResponse(response) {
+            if (response.credential) {
+                handleAuthSuccess(response);
+            }
+        }
+
+        // Handle successful authentication
+        function handleAuthSuccess(authResult) {
+            if (authResult && !authResult.error) {
+                // Store token in localStorage
+                if (authResult.access_token) {
+                    localStorage.setItem('health_tracker_token', authResult.access_token);
+                }
+                
+                state.isAuthenticated = true;
+                showApp();
+                loadUserData();
+            } else {
+                console.error('Authentication failed:', authResult.error);
+            }
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Auth button
+            authButton.addEventListener('click', () => {
+                google.accounts.id.prompt();
+            });
+            
+            // Logout button
+            logoutButton.addEventListener('click', () => {
+                localStorage.removeItem('health_tracker_token');
+                state.isAuthenticated = false;
+                showAuth();
+            });
+            
+            // User selection
+            userSelect.addEventListener('change', (e) => {
+                state.currentUser = parseInt(e.target.value);
+                refreshDashboard();
+            });
+            
+            // Mobile menu toggle
+            mobileMenuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('sidebar-active');
+            });
+            
+            // Navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    link.classList.add('active');
+                    
+                    // Show corresponding section
+                    const sectionId = link.getAttribute('data-section');
+                    showSection(sectionId);
+                    
+                    // Close mobile menu if open
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                        mainContent.classList.remove('sidebar-active');
+                    }
+                });
+            });
+            
+            // View buttons
+            viewWeightBtn.addEventListener('click', () => showSection('weight'));
+            viewMealsBtn.addEventListener('click', () => showSection('meals'));
+            viewMoodBtn.addEventListener('click', () => showSection('mood'));
+            viewGoalsBtn.addEventListener('click', () => showSection('goals'));
+            
+            // Quick log buttons
+            quickLogWeight.addEventListener('click', () => {
+                modals.quickWeight.style.display = 'block';
+                document.getElementById('quickWeightValue').value = '';
+                document.getElementById('quickWeightValue').focus();
+            });
+            
+            quickLogMeal.addEventListener('click', () => {
+                modals.quickMeal.style.display = 'block';
+                document.getElementById('quickFoodItem').value = '';
+                document.getElementById('quickCalories').value = '';
+                document.getElementById('quickFoodItem').focus();
+            });
+            
+            quickLogMood.addEventListener('click', () => {
+                modals.quickMood.style.display = 'block';
+                document.getElementById('quickMoodScore').value = 5;
+                document.getElementById('quickMoodScoreDisplay').textContent = 5;
+                document.getElementById('quickMoodNotes').value = '';
+            });
+            
+            // Modal close buttons
+            closeWeightModal.addEventListener('click', () => {
+                modals.quickWeight.style.display = 'none';
+            });
+            
+            closeMealModal.addEventListener('click', () => {
+                modals.quickMeal.style.display = 'none';
+            });
+            
+            closeMoodModal.addEventListener('click', () => {
+                modals.quickMood.style.display = 'none';
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === modals.quickWeight) {
+                    modals.quickWeight.style.display = 'none';
+                }
+                if (e.target === modals.quickMeal) {
+                    modals.quickMeal.style.display = 'none';
+                }
+                if (e.target === modals.quickMood) {
+                    modals.quickMood.style.display = 'none';
+                }
+            });
+            
+            // Form submissions
+            forms.weight.addEventListener('submit', handleWeightFormSubmit);
+            forms.quickWeight.addEventListener('submit', handleQuickWeightFormSubmit);
+            forms.meal.addEventListener('submit', handleMealFormSubmit);
+            forms.quickMeal.addEventListener('submit', handleQuickMealFormSubmit);
+            forms.mood.addEventListener('submit', handleMoodFormSubmit);
+            forms.quickMood.addEventListener('submit', handleQuickMoodFormSubmit);
+            forms.goal.addEventListener('submit', handleGoalFormSubmit);
+            forms.profile.addEventListener('submit', handleProfileFormSubmit);
+            forms.appSettings.addEventListener('submit', handleAppSettingsFormSubmit);
+            
+            // Handle sliders
+            moodScore.addEventListener('input', () => {
+                moodScoreDisplay.textContent = moodScore.value;
+            });
+            
+            energyLevel.addEventListener('input', () => {
+                energyLevelDisplay.textContent = energyLevel.value;
+            });
+            
+            stressLevel.addEventListener('input', () => {
+                stressLevelDisplay.textContent = stressLevel.value;
+            });
+            
+            quickMoodScore.addEventListener('input', () => {
+                quickMoodScoreDisplay.textContent = quickMoodScore.value;
+            });
+            
+            // Set default date values
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('weightDate').value = today;
+            document.getElementById('mealDate').value = today;
+            document.getElementById('moodDate').value = today;
+            document.getElementById('goalStartDate').value = today;
+            
+            // Set target date default (1 month from today)
+            const targetDate = new Date();
+            targetDate.setMonth(targetDate.getMonth() + 1);
+            document.getElementById('goalTargetDate').value = targetDate.toISOString().split('T')[0];
+        }
+
+        // Show authentication screen
+        function showAuth() {
+            authScreen.style.display = 'flex';
+            appContainer.style.display = 'none';
+        }
+
+        // Show application
+        function showApp() {
+            authScreen.style.display = 'none';
+            appContainer.style.display = 'block';
+        }
+
+        // Show specific section
+        function showSection(sectionId) {
+            // Hide all sections
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show requested section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update navigation
+            navLinks.forEach(link => {
+                if (link.getAttribute('data-section') === sectionId) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            
+            // Load section-specific data if needed
+            if (sectionId === 'weight') {
+                loadWeightHistory();
+            } else if (sectionId === 'meals') {
+                loadMealsHistory();
+            } else if (sectionId === 'mood') {
+                loadMoodHistory();
+            } else if (sectionId === 'goals') {
+                loadGoals();
+            } else if (sectionId === 'settings') {
+                loadUserProfile();
+            }
+        }
+
+        // Show loading indicator
+        function showLoading() {
+            loadingIndicator.style.display = 'flex';
+        }
+
+        // Hide loading indicator
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Load user data from Google Sheets
+        async function loadUserData() {
+            showLoading();
+            
+            try {
+                // Load all data for the current user
+                await Promise.all([
+                    loadUserProfile(),
+                    loadWeightData(),
+                    loadMealsData(),
+                    loadMoodData(),
+                    loadGoals()
+                ]);
+                
+                // Update dashboard
+                refreshDashboard();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Users!A:G'
+                });
+                
+                const rows = response.result.values || [];
+                if (rows.length > 0) {
+                    // Find current user
+                    const userRow = rows.find(row => parseInt(row[0]) === state.currentUser);
+                    
+                    if (userRow) {
+                        state.userData = {
+                            id: parseInt(userRow[0]),
+                            name: userRow[1],
+                            email: userRow[2],
+                            gender: userRow[3],
+                            height: parseFloat(userRow[4]),
+                            birthDate: userRow[5],
+                            active: userRow[6] === 'true'
+                        };
+                        
+                        // Update profile form if on settings page
+                        if (document.getElementById('settings').classList.contains('active')) {
+                            document.getElementById('userName').value = state.userData.name;
+                            document.getElementById('userEmail').value = state.userData.email;
+                            document.getElementById('userGender').value = state.userData.gender;
+                            document.getElementById('userHeight').value = state.userData.height;
+                            document.getElementById('userBirthDate').value = new Date(state.userData.birthDate).toISOString().split('T')[0];
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+            }
+        }
+
+        // Load weight data
+        async function loadWeightData() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Weight!A:F'
+                });
+                
+                const rows = response.result.values || [];
+                if (rows.length > 0) {
+                    // Extract headers and data
+                    const headers = rows[0];
+                    const data = rows.slice(1);
+                    
+                    // Filter for current user
+                    state.weightData = data
+                        .filter(row => parseInt(row[1]) === state.currentUser)
+                        .map(row => ({
+                            id: parseInt(row[0]),
+                            userId: parseInt(row[1]),
+                            date: new Date(row[2]),
+                            weight: parseFloat(row[3]),
+                            bmi: row[4] ? parseFloat(row[4]) : null,
+                            notes: row[5] || ''
+                        }))
+                        .sort((a, b) => b.date - a.date); // Sort by date descending
+                }
+            } catch (error) {
+                console.error('Error loading weight data:', error);
+            }
+        }
+
+        // Load meals data
+        async function loadMealsData() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Meals!A:M'
+                });
+                
+                const rows = response.result.values || [];
+                if (rows.length > 0) {
+                    // Extract headers and data
+                    const headers = rows[0];
+                    const data = rows.slice(1);
+                    
+                    // Filter for current user
+                    state.mealsData = data
+                        .filter(row => parseInt(row[1]) === state.currentUser)
+                        .map(row => ({
+                            id: parseInt(row[0]),
+                            userId: parseInt(row[1]),
+                            date: new Date(row[2]),
+                            time: row[3],
+                            mealType: row[4],
+                            foodItem: row[5],
+                            quantity: parseFloat(row[6]),
+                            unit: row[7],
+                            calories: parseInt(row[8]),
+                            protein: parseFloat(row[9]),
+                            carbs: parseFloat(row[10]),
+                            fat: parseFloat(row[11]),
+                            notes: row[12] || ''
+                        }))
+                        .sort((a, b) => b.date - a.date || a.time.localeCompare(b.time)); // Sort by date and time
+                }
+            } catch (error) {
+                console.error('Error loading meals data:', error);
+            }
+        }
+
+        // Load mood data
+        async function loadMoodData() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Mood!A:J'
+                });
+                
+                const rows = response.result.values || [];
+                if (rows.length > 0) {
+                    // Extract headers and data
+                    const headers = rows[0];
+                    const data = rows.slice(1);
+                    
+                    // Filter for current user
+                    state.moodData = data
+                        .filter(row => parseInt(row[1]) === state.currentUser)
+                        .map(row => ({
+                            id: parseInt(row[0]),
+                            userId: parseInt(row[1]),
+                            date: new Date(row[2]),
+                            time: row[3],
+                            moodScore: parseInt(row[4]),
+                            energyLevel: parseInt(row[5]),
+                            stressLevel: parseInt(row[6]),
+                            sleepHours: parseFloat(row[7]),
+                            notes: row[8] || '',
+                            sentimentScore: row[9] ? parseFloat(row[9]) : null
+                        }))
+                        .sort((a, b) => b.date - a.date || a.time.localeCompare(b.time)); // Sort by date and time
+                }
+            } catch (error) {
+                console.error('Error loading mood data:', error);
+            }
+        }
+
+        // Load goals data
+        async function loadGoals() {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Goals!A:J'
+                });
+                
+                const rows = response.result.values || [];
+                if (rows.length > 0) {
+                    // Extract headers and data
+                    const headers = rows[0];
+                    const data = rows.slice(1);
+                    
+                    // Filter for current user
+                    state.goalsData = data
+                        .filter(row => parseInt(row[1]) === state.currentUser)
+                        .map(row => ({
+                            id: parseInt(row[0]),
+                            userId: parseInt(row[1]),
+                            category: row[2],
+                            description: row[3],
+                            targetValue: parseFloat(row[4]),
+                            startDate: new Date(row[5]),
+                            targetDate: new Date(row[6]),
+                            currentValue: parseFloat(row[7]),
+                            progress: row[8] ? parseFloat(row[8]) : 0,
+                            status: row[9]
+                        }))
+                        .sort((a, b) => a.targetDate - b.targetDate); // Sort by target date
+                    
+                    // Update goals UI if on goals page
+                    if (document.getElementById('goals').classList.contains('active')) {
+                        updateGoalsUI();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading goals data:', error);
+            }
+        }
+
+        // Update dashboard with latest data
+        function refreshDashboard() {
+            if (state.weightData.length > 0) {
+                updateWeightDashboard();
+            }
+            
+            if (state.mealsData.length > 0) {
+                updateNutritionDashboard();
+            }
+            
+            if (state.moodData.length > 0) {
+                updateMoodDashboard();
+            }
+            
+            if (state.goalsData.length > 0) {
+                updateGoalsDashboard();
+            }
+            
+            updateRecentEntries();
+        }
+
+        // Update weight dashboard
+        function updateWeightDashboard() {
+            // Latest weight data
+            const latestWeight = state.weightData[0];
+            
+            document.getElementById('currentWeight').textContent = `${latestWeight.weight.toFixed(1)} kg`;
+            document.getElementById('currentBMI').textContent = latestWeight.bmi ? `${latestWeight.bmi.toFixed(1)}` : 'N/A';
+            
+            // Create chart data (last 10 entries, but in chronological order)
+            const chartData = state.weightData.slice(0, 10).reverse();
+            
+            // Create weight chart
+            const ctx = document.getElementById('weightChart');
+            
+            // Destroy previous chart if it exists
+            if (weightChart) {
+                weightChart.destroy();
+            }
+            
+            weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(entry => entry.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: chartData.map(entry => entry.weight),
+                        borderColor: '#4285F4',
+                        backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update nutrition dashboard
+        function updateNutritionDashboard() {
+            // Get today's date
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Filter meals for today
+            const todayMeals = state.mealsData.filter(meal => {
+                const mealDate = new Date(meal.date);
+                mealDate.setHours(0, 0, 0, 0);
+                return mealDate.getTime() === today.getTime();
+            });
+            
+            // Calculate totals
+            const totals = {
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0
+            };
+            
+            todayMeals.forEach(meal => {
+                totals.calories += meal.calories;
+                totals.protein += meal.protein;
+                totals.carbs += meal.carbs;
+                totals.fat += meal.fat;
+            });
+            
+            // Update dashboard
+            document.getElementById('todayCalories').textContent = `${totals.calories} kcal`;
+            document.getElementById('todayProtein').textContent = `${totals.protein.toFixed(1)} g`;
+            document.getElementById('todayCarbs').textContent = `${totals.carbs.toFixed(1)} g`;
+            document.getElementById('todayFat').textContent = `${totals.fat.toFixed(1)} g`;
+        }
+
+        // Update mood dashboard
+        function updateMoodDashboard() {
+            // Get today's mood
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const todayMood = state.moodData.find(entry => {
+                const entryDate = new Date(entry.date);
+                entryDate.setHours(0, 0, 0, 0);
+                return entryDate.getTime() === today.getTime();
+            });
+            
+            if (todayMood) {
+                document.getElementById('todayMood').textContent = `${todayMood.moodScore}/10`;
+            } else {
+                document.getElementById('todayMood').textContent = 'Not logged today';
+            }
+            
+            // Create chart data (last 7 entries, but in chronological order)
+            const chartData = state.moodData.slice(0, 7).reverse();
+            
+            // Create mood chart
+            const ctx = document.getElementById('moodChart');
+            
+            // Destroy previous chart if it exists
+            if (moodChart) {
+                moodChart.destroy();
+            }
+            
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(entry => entry.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Mood',
+                        data: chartData.map(entry => entry.moodScore),
+                        borderColor: '#F4B400',
+                        backgroundColor: 'rgba(244, 180, 0, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 1,
+                            max: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update goals dashboard
+        function updateGoalsDashboard() {
+            // Filter active goals
+            const activeGoals = state.goalsData.filter(goal => 
+                goal.status !== 'Completed' && goal.status !== 'Abandoned'
+            );
+            
+            // Get goals container
+            const goalsContainer = document.getElementById('goalsContainer');
+            goalsContainer.innerHTML = '';
+            
+            // Display active goals (up to 3)
+            const displayGoals = activeGoals.slice(0, 3);
+            
+            if (displayGoals.length === 0) {
+                goalsContainer.innerHTML = '<p>No active goals. Create one in the Goals section.</p>';
+                return;
+            }
+            
+            displayGoals.forEach(goal => {
+                const goalEl = document.createElement('div');
+                goalEl.style.marginBottom = '15px';
+                
+                const titleEl = document.createElement('div');
+                titleEl.style.display = 'flex';
+                titleEl.style.justifyContent = 'space-between';
+                titleEl.style.marginBottom = '5px';
+                
+                const nameEl = document.createElement('div');
+                nameEl.textContent = goal.description;
+                nameEl.style.fontWeight = 'bold';
+                
+                const valueEl = document.createElement('div');
+                valueEl.textContent = `${goal.currentValue} / ${goal.targetValue}`;
+                
+                titleEl.appendChild(nameEl);
+                titleEl.appendChild(valueEl);
+                
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'progress-container';
+                
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                progressBar.style.width = `${goal.progress}%`;
+                
+                progressContainer.appendChild(progressBar);
+                
+                goalEl.appendChild(titleEl);
+                goalEl.appendChild(progressContainer);
+                
+                goalsContainer.appendChild(goalEl);
+            });
+        }
+
+        // Update recent entries table
+        function updateRecentEntries() {
+            // Combine all entries
+            const allEntries = [
+                ...state.weightData.map(entry => ({
+                    type: 'Weight',
+                    date: entry.date,
+                    details: `${entry.weight} kg`
+                })),
+                ...state.mealsData.map(entry => ({
+                    type: 'Meal',
+                    date: new Date(`${entry.date.toDateString()} ${entry.time}`),
+                    details: `${entry.mealType}: ${entry.foodItem} (${entry.calories} kcal)`
+                })),
+                ...state.moodData.map(entry => ({
+                    type: 'Mood',
+                    date: new Date(`${entry.date.toDateString()} ${entry.time}`),
+                    details: `Mood: ${entry.moodScore}/10, Energy: ${entry.energyLevel}/10`
+                }))
+            ];
+            
+            // Sort by date (newest first)
+            allEntries.sort((a, b) => b.date - a.date);
+            
+            // Get table body
+            const tableBody = document.querySelector('#recentEntriesTable tbody');
+            tableBody.innerHTML = '';
+            
+            // Display recent entries (up to 10)
+            const recentEntries = allEntries.slice(0, 10);
+            
+            if (recentEntries.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3">No entries yet. Start logging your health data!</td></tr>';
+                return;
+            }
+            
+            recentEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = entry.date.toLocaleString();
+                
+                const typeCell = document.createElement('td');
+                typeCell.textContent = entry.type;
+                
+                const detailsCell = document.createElement('td');
+                detailsCell.textContent = entry.details;
+                
+                row.appendChild(dateCell);
+                row.appendChild(typeCell);
+                row.appendChild(detailsCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Load weight history
+        function loadWeightHistory() {
+            if (state.weightData.length === 0) return;
+            
+            // Get table body
+            const tableBody = document.querySelector('#weightHistoryTable tbody');
+            tableBody.innerHTML = '';
+            
+            // Create weight chart
+            const ctx = document.getElementById('weightHistoryChart');
+            
+            // Destroy previous chart if it exists
+            if (weightHistoryChart) {
+                weightHistoryChart.destroy();
+            }
+            
+            // Chart data (in chronological order)
+            const chartData = [...state.weightData].reverse();
+            
+            weightHistoryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(entry => entry.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: chartData.map(entry => entry.weight),
+                        borderColor: '#4285F4',
+                        backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+            
+            // Display weight entries
+            state.weightData.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = entry.date.toLocaleDateString();
+                
+                const weightCell = document.createElement('td');
+                weightCell.textContent = entry.weight.toFixed(1);
+                
+                const bmiCell = document.createElement('td');
+                bmiCell.textContent = entry.bmi ? entry.bmi.toFixed(1) : 'N/A';
+                
+                // Set BMI cell color based on value
+                if (entry.bmi) {
+                    if (entry.bmi < 18.5) {
+                        bmiCell.style.backgroundColor = '#A4C2F4'; // Underweight
+                    } else if (entry.bmi < 25) {
+                        bmiCell.style.backgroundColor = '#B6D7A8'; // Normal
+                    } else if (entry.bmi < 30) {
+                        bmiCell.style.backgroundColor = '#FFE599'; // Overweight
+                    } else {
+                        bmiCell.style.backgroundColor = '#F4CCCC'; // Obese
+                    }
+                }
+                
+                const notesCell = document.createElement('td');
+                notesCell.textContent = entry.notes;
+                
+                row.appendChild(dateCell);
+                row.appendChild(weightCell);
+                row.appendChild(bmiCell);
+                row.appendChild(notesCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Load meals history
+        function loadMealsHistory() {
+            if (state.mealsData.length === 0) return;
+            
+            // Get table body
+            const tableBody = document.querySelector('#mealsHistoryTable tbody');
+            tableBody.innerHTML = '';
+            
+            // Display meal entries
+            state.mealsData.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = `${entry.date.toLocaleDateString()} ${entry.time}`;
+                
+                const mealCell = document.createElement('td');
+                mealCell.textContent = entry.mealType;
+                
+                const foodCell = document.createElement('td');
+                foodCell.textContent = `${entry.foodItem} (${entry.quantity} ${entry.unit})`;
+                
+                const caloriesCell = document.createElement('td');
+                caloriesCell.textContent = entry.calories;
+                
+                const proteinCell = document.createElement('td');
+                proteinCell.textContent = entry.protein.toFixed(1);
+                
+                const carbsCell = document.createElement('td');
+                carbsCell.textContent = entry.carbs.toFixed(1);
+                
+                const fatCell = document.createElement('td');
+                fatCell.textContent = entry.fat.toFixed(1);
+                
+                row.appendChild(dateCell);
+                row.appendChild(mealCell);
+                row.appendChild(foodCell);
+                row.appendChild(caloriesCell);
+                row.appendChild(proteinCell);
+                row.appendChild(carbsCell);
+                row.appendChild(fatCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Load mood history
+        function loadMoodHistory() {
+            if (state.moodData.length === 0) return;
+            
+            // Get table body
+            const tableBody = document.querySelector('#moodHistoryTable tbody');
+            tableBody.innerHTML = '';
+            
+            // Create mood chart
+            const ctx = document.getElementById('moodHistoryChart');
+            
+            // Destroy previous chart if it exists
+            if (moodHistoryChart) {
+                moodHistoryChart.destroy();
+            }
+            
+            // Chart data (in chronological order for last 14 entries)
+            const chartData = [...state.moodData].slice(0, 14).reverse();
+            
+            moodHistoryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(entry => entry.date.toLocaleDateString()),
+                    datasets: [
+                        {
+                            label: 'Mood',
+                            data: chartData.map(entry => entry.moodScore),
+                            borderColor: '#F4B400',
+                            backgroundColor: 'rgba(244, 180, 0, 0.1)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Energy',
+                            data: chartData.map(entry => entry.energyLevel),
+                            borderColor: '#0F9D58',
+                            backgroundColor: 'rgba(15, 157, 88, 0)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Stress',
+                            data: chartData.map(entry => entry.stressLevel),
+                            borderColor: '#DB4437',
+                            backgroundColor: 'rgba(219, 68, 55, 0)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 1,
+                            max: 10
+                        }
+                    }
+                }
+            });
+            
+            // Display mood entries
+            state.moodData.forEach(entry => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = entry.date.toLocaleDateString();
+                
+                const timeCell = document.createElement('td');
+                timeCell.textContent = entry.time;
+                
+                const moodCell = document.createElement('td');
+                moodCell.textContent = entry.moodScore;
+                
+                // Set mood cell color based on score
+                if (entry.moodScore <= 3) {
+                    moodCell.style.backgroundColor = '#F4CCCC'; // Low
+                } else if (entry.moodScore <= 7) {
+                    moodCell.style.backgroundColor = '#FFF2CC'; // Medium
+                } else {
+                    moodCell.style.backgroundColor = '#D9EAD3'; // High
+                }
+                
+                const energyCell = document.createElement('td');
+                energyCell.textContent = entry.energyLevel;
+                
+                const stressCell = document.createElement('td');
+                stressCell.textContent = entry.stressLevel;
+                
+                const sleepCell = document.createElement('td');
+                sleepCell.textContent = entry.sleepHours;
+                
+                const notesCell = document.createElement('td');
+                notesCell.textContent = entry.notes;
+                
+                row.appendChild(dateCell);
+                row.appendChild(timeCell);
+                row.appendChild(moodCell);
+                row.appendChild(energyCell);
+                row.appendChild(stressCell);
+                row.appendChild(sleepCell);
+                row.appendChild(notesCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Update goals UI
+        function updateGoalsUI() {
+            // Filter active goals
+            const activeGoals = state.goalsData.filter(goal => 
+                goal.status !== 'Completed' && goal.status !== 'Abandoned'
+            );
+            
+            // Filter completed goals
+            const completedGoals = state.goalsData.filter(goal => 
+                goal.status === 'Completed'
+            );
+            
+            // Get active goals container
+            const activeGoalsContainer = document.getElementById('activeGoalsContainer');
+            activeGoalsContainer.innerHTML = '';
+            
+            // Display active goals
+            if (activeGoals.length === 0) {
+                activeGoalsContainer.innerHTML = '<p>No active goals. Add a new goal above.</p>';
+            } else {
+                activeGoals.forEach(goal => {
+                    const goalEl = document.createElement('div');
+                    goalEl.className = 'card';
+                    goalEl.style.marginBottom = '15px';
+                    goalEl.style.padding = '15px';
+                    
+                    const headerEl = document.createElement('div');
+                    headerEl.style.display = 'flex';
+                    headerEl.style.justifyContent = 'space-between';
+                    headerEl.style.marginBottom = '10px';
+                    
+                    const titleEl = document.createElement('h4');
+                    titleEl.textContent = goal.description;
+                    titleEl.style.margin = '0';
+                    
+                    const categoryEl = document.createElement('span');
+                    categoryEl.className = 'badge';
+                    categoryEl.textContent = goal.category;
+                    
+                    // Set badge color based on category
+                    if (goal.category === 'Weight') {
+                        categoryEl.className += ' badge-primary';
+                        categoryEl.style.backgroundColor = '#4285F4';
+                    } else if (goal.category === 'Exercise') {
+                        categoryEl.className += ' badge-success';
+                        categoryEl.style.backgroundColor = '#0F9D58';
+                    } else if (goal.category === 'Nutrition') {
+                        categoryEl.className += ' badge-warning';
+                        categoryEl.style.backgroundColor = '#F4B400';
+                    } else {
+                        categoryEl.className += ' badge-secondary';
+                        categoryEl.style.backgroundColor = '#757575';
+                    }
+                    
+                    headerEl.appendChild(titleEl);
+                    headerEl.appendChild(categoryEl);
+                    
+                    const detailsEl = document.createElement('div');
+                    
+                    const currentEl = document.createElement('div');
+                    currentEl.style.display = 'flex';
+                    currentEl.style.justifyContent = 'space-between';
+                    currentEl.style.marginBottom = '5px';
+                    
+                    const currentLabelEl = document.createElement('span');
+                    currentLabelEl.textContent = 'Current:';
+                    
+                    const currentValueEl = document.createElement('span');
+                    currentValueEl.textContent = goal.currentValue;
+                    
+                    currentEl.appendChild(currentLabelEl);
+                    currentEl.appendChild(currentValueEl);
+                    
+                    const targetEl = document.createElement('div');
+                    targetEl.style.display = 'flex';
+                    targetEl.style.justifyContent = 'space-between';
+                    targetEl.style.marginBottom = '5px';
+                    
+                    const targetLabelEl = document.createElement('span');
+                    targetLabelEl.textContent = 'Target:';
+                    
+                    const targetValueEl = document.createElement('span');
+                    targetValueEl.textContent = goal.targetValue;
+                    
+                    targetEl.appendChild(targetLabelEl);
+                    targetEl.appendChild(targetValueEl);
+                    
+                    const dateEl = document.createElement('div');
+                    dateEl.style.display = 'flex';
+                    dateEl.style.justifyContent = 'space-between';
+                    dateEl.style.marginBottom = '10px';
+                    
+                    const dateLabelEl = document.createElement('span');
+                    dateLabelEl.textContent = 'Target Date:';
+                    
+                    const dateValueEl = document.createElement('span');
+                    dateValueEl.textContent = goal.targetDate.toLocaleDateString();
+                    
+                    dateEl.appendChild(dateLabelEl);
+                    dateEl.appendChild(dateValueEl);
+                    
+                    detailsEl.appendChild(currentEl);
+                    detailsEl.appendChild(targetEl);
+                    detailsEl.appendChild(dateEl);
+                    
+                    const progressContainer = document.createElement('div');
+                    progressContainer.className = 'progress-container';
+                    
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'progress-bar';
+                    progressBar.style.width = `${goal.progress}%`;
+                    
+                    progressContainer.appendChild(progressBar);
+                    
+                    const progressTextEl = document.createElement('div');
+                    progressTextEl.style.textAlign = 'right';
+                    progressTextEl.style.fontSize = '0.9rem';
+                    progressTextEl.style.marginTop = '5px';
+                    progressTextEl.textContent = `${goal.progress.toFixed(0)}% complete`;
+                    
+                    goalEl.appendChild(headerEl);
+                    goalEl.appendChild(detailsEl);
+                    goalEl.appendChild(progressContainer);
+                    goalEl.appendChild(progressTextEl);
+                    
+                    activeGoalsContainer.appendChild(goalEl);
+                });
+            }
+            
+            // Get completed goals table
+            const completedGoalsTableBody = document.querySelector('#completedGoalsTable tbody');
+            completedGoalsTableBody.innerHTML = '';
+            
+            // Display completed goals
+            if (completedGoals.length === 0) {
+                completedGoalsTableBody.innerHTML = '<tr><td colspan="5">No completed goals yet.</td></tr>';
+            } else {
+                completedGoals.forEach(goal => {
+                    const row = document.createElement('tr');
+                    
+                    const categoryCell = document.createElement('td');
+                    categoryCell.textContent = goal.category;
+                    
+                    const descriptionCell = document.createElement('td');
+                    descriptionCell.textContent = goal.description;
+                    
+                    const targetCell = document.createElement('td');
+                    targetCell.textContent = goal.targetValue;
+                    
+                    const achievedCell = document.createElement('td');
+                    achievedCell.textContent = goal.currentValue;
+                    
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = goal.targetDate.toLocaleDateString();
+                    
+                    row.appendChild(categoryCell);
+                    row.appendChild(descriptionCell);
+                    row.appendChild(targetCell);
+                    row.appendChild(achievedCell);
+                    row.appendChild(dateCell);
+                    
+                    completedGoalsTableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Handle weight form submission
+        async function handleWeightFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const date = document.getElementById('weightDate').value;
+                const weight = parseFloat(document.getElementById('weightValue').value);
+                const notes = document.getElementById('weightNotes').value;
+                
+                // Generate new entry ID
+                const entryId = state.weightData.length > 0 
+                    ? Math.max(...state.weightData.map(entry => entry.id)) + 1 
+                    : 1;
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Weight!A:F',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [entryId, state.currentUser, date, weight, '', notes]
+                        ]
+                    }
+                });
+                
+                // Reload weight data
+                await loadWeightData();
+                
+                // Update UI
+                if (document.getElementById('weight').classList.contains('active')) {
+                    loadWeightHistory();
+                }
+                
+                // Reset form
+                document.getElementById('weightForm').reset();
+                document.getElementById('weightDate').value = new Date().toISOString().split('T')[0];
+                
+                // If on dashboard, update it
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    refreshDashboard();
+                }
+                
+                alert('Weight entry added successfully!');
+            } catch (error) {
+                console.error('Error adding weight entry:', error);
+                alert('Failed to add weight entry. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle quick weight form submission
+        async function handleQuickWeightFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const weight = parseFloat(document.getElementById('quickWeightValue').value);
+                const date = new Date().toISOString().split('T')[0];
+                
+                // Generate new entry ID
+                const entryId = state.weightData.length > 0 
+                    ? Math.max(...state.weightData.map(entry => entry.id)) + 1 
+                    : 1;
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Weight!A:F',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [entryId, state.currentUser, date, weight, '', '']
+                        ]
+                    }
+                });
+                
+                // Reload weight data
+                await loadWeightData();
+                
+                // Close modal
+                modals.quickWeight.style.display = 'none';
+                
+                // Update dashboard
+                refreshDashboard();
+                
+                alert('Weight entry added successfully!');
+            } catch (error) {
+                console.error('Error adding weight entry:', error);
+                alert('Failed to add weight entry. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle meal form submission
+        async function handleMealFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const date = document.getElementById('mealDate').value;
+                const time = document.getElementById('mealTime').value;
+                const mealType = document.getElementById('mealType').value;
+                const foodItem = document.getElementById('foodItem').value;
+                const quantity = parseFloat(document.getElementById('quantity').value);
+                const unit = document.getElementById('unit').value;
+                const calories = parseInt(document.getElementById('calories').value);
+                const protein = parseFloat(document.getElementById('protein').value);
+                const carbs = parseFloat(document.getElementById('carbs').value);
+                const fat = parseFloat(document.getElementById('fat').value);
+                const notes = document.getElementById('mealNotes').value;
+                
+                // Generate new entry ID
+                const entryId = state.mealsData.length > 0 
+                    ? Math.max(...state.mealsData.map(entry => entry.id)) + 1 
+                    : 1;
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Meals!A:M',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [entryId, state.currentUser, date, time, mealType, foodItem, quantity, unit, calories, protein, carbs, fat, notes]
+                        ]
+                    }
+                });
+                
+                // Reload meals data
+                await loadMealsData();
+                
+                // Update UI
+                if (document.getElementById('meals').classList.contains('active')) {
+                    loadMealsHistory();
+                }
+                
+                // Reset form
+                document.getElementById('mealForm').reset();
+                document.getElementById('mealDate').value = new Date().toISOString().split('T')[0];
+                
+                // If on dashboard, update it
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    refreshDashboard();
+                }
+                
+                alert('Meal entry added successfully!');
+            } catch (error) {
+                console.error('Error adding meal entry:', error);
+                alert('Failed to add meal entry. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle quick meal form submission
+        async function handleQuickMealFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const mealType = document.getElementById('quickMealType').value;
+                const foodItem = document.getElementById('quickFoodItem').value;
+                const calories = parseInt(document.getElementById('quickCalories').value);
+                const date = new Date().toISOString().split('T')[0];
+                const time = new Date().toTimeString().split(' ')[0].substring(0, 5);
+                
+                // Default values for quick entry
+                const quantity = 1;
+                const unit = 'serving';
+                const protein = 0;
+                const carbs = 0;
+                const fat = 0;
+                
+                // Generate new entry ID
+                const entryId = state.mealsData.length > 0 
+                    ? Math.max(...state.mealsData.map(entry => entry.id)) + 1 
+                    : 1;
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Meals!A:M',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [entryId, state.currentUser, date, time, mealType, foodItem, quantity, unit, calories, protein, carbs, fat, '']
+                        ]
+                    }
+                });
+                
+                // Reload meals data
+                await loadMealsData();
+                
+                // Close modal
+                modals.quickMeal.style.display = 'none';
+                
+                // Update dashboard
+                refreshDashboard();
+                
+                alert('Meal entry added successfully!');
+            } catch (error) {
+                console.error('Error adding meal entry:', error);
+                alert('Failed to add meal entry. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle mood form submission
+        async function handleMoodFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const date = document.getElementById('moodDate').value;
+                const time = document.getElementById('moodTime').value;
+                const moodScore = parseInt(document.getElementById('moodScore').value);
+                const energyLevel = parseInt(document.getElementById('energyLevel').value);
+                const stressLevel = parseInt(document.getElementById('stressLevel').value);
+                const sleepHours = parseFloat(document.getElementById('sleepHours').value);
+                const notes = document.getElementById('moodNotes').value;
+                
+                // Generate new entry ID
+                const entryId = state.moodData.length > 0 
+                    ? Math.max(...state.moodData.map(entry => entry.id)) + 1 
+                    : 1;
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Mood!A:J',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [entryId, state.currentUser, date, time, moodScore, energyLevel, stressLevel, sleepHours, notes, '']
+                        ]
+                    }
+                });
+                
+                // Reload mood data
+                await loadMoodData();
+                
+                // Update UI
+                if (document.getElementById('mood').classList.contains('active')) {
+                    loadMoodHistory();
+                }
+                
+                // Reset form
+                document.getElementById('moodForm').reset();
+                document.getElementById('moodDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('moodScore').value = 5;
+                document.getElementById('moodScoreDisplay').textContent = 5;
+                document.getElementById('energyLevel').value = 5;
+                document.getElementById('energyLevelDisplay').textContent = 5;
+                document.getElementById('stressLevel').value = 5;
+                document.getElementById('stressLevelDisplay').textContent = 5;
+                
+                // If on dashboard, update it
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    refreshDashboard();
+                }
+                
+                alert('Mood entry added successfully!');
+            } catch (error) {
+                console.error('Error adding mood entry:', error);
+                alert('Failed to add mood entry. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle quick mood form submission
+        async function handleQuickMoodFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const moodScore = parseInt(document.getElementById('quickMoodScore').value);
+                const notes = document.getElementById('quickMoodNotes').value;
+                const date = new Date().toISOString().split('T')[0];
+                const time = new Date().toTimeString().split(' ')[0].substring(0, 5);
+                
+                // Default values for quick entry
+                const energyLevel = moodScore;
+                const stressLevel = 11 - moodScore; // Inverse of mood score
+                const sleepHours = 0;
+                
+                // Generate new entry ID
+                const entryId = state.moodData.length > 0 
+                    ? Math.max(...state.moodData.map(entry => entry.id)) + 1 
+                    : 1;
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Mood!A:J',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [entryId, state.currentUser, date, time, moodScore, energyLevel, stressLevel, sleepHours, notes, '']
+                        ]
+                    }
+                });
+                
+                // Reload mood data
+                await loadMoodData();
+                
+                // Close modal
+                modals.quickMood.style.display = 'none';
+                
+                // Update dashboard
+                refreshDashboard();
+                
+                alert('Mood entry added successfully!');
+            } catch (error) {
+                console.error('Error adding mood entry:', error);
+                alert('Failed to add mood entry. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle goal form submission
+        async function handleGoalFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const category = document.getElementById('goalCategory').value;
+                const description = document.getElementById('goalDescription').value;
+                const targetValue = parseFloat(document.getElementById('goalTargetValue').value);
+                const currentValue = parseFloat(document.getElementById('goalCurrentValue').value);
+                const startDate = document.getElementById('goalStartDate').value;
+                const targetDate = document.getElementById('goalTargetDate').value;
+                
+                // Generate new entry ID
+                const goalId = state.goalsData.length > 0 
+                    ? Math.max(...state.goalsData.map(goal => goal.id)) + 1 
+                    : 1;
+                
+                // Calculate progress
+                let progress = 0;
+                if (category === 'Weight' && targetValue < currentValue) {
+                    // Weight loss goal
+                    const startWeight = currentValue;
+                    const targetWeight = targetValue;
+                    progress = Math.min(100, Math.max(0, (1 - (currentValue - targetValue) / (startWeight - targetWeight)) * 100));
+                } else if (category === 'Weight' && targetValue >= currentValue) {
+                    // Weight gain goal
+                    progress = Math.min(100, Math.max(0, (currentValue / targetValue) * 100));
+                } else {
+                    // Other types of goals
+                    progress = Math.min(100, Math.max(0, (currentValue / targetValue) * 100));
+                }
+                
+                // Add new entry to Google Sheet
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: 'Goals!A:J',
+                    valueInputOption: 'USER_ENTERED',
+                    insertDataOption: 'INSERT_ROWS',
+                    resource: {
+                        values: [
+                            [goalId, state.currentUser, category, description, targetValue, startDate, targetDate, currentValue, progress, 'In Progress']
+                        ]
+                    }
+                });
+                
+                // Reload goals data
+                await loadGoals();
+                
+                // Reset form
+                document.getElementById('goalForm').reset();
+                document.getElementById('goalStartDate').value = new Date().toISOString().split('T')[0];
+                const nextMonth = new Date();
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                document.getElementById('goalTargetDate').value = nextMonth.toISOString().split('T')[0];
+                
+                // If on dashboard, update it
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    refreshDashboard();
+                }
+                
+                alert('Goal added successfully!');
+            } catch (error) {
+                console.error('Error adding goal:', error);
+                alert('Failed to add goal. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle profile form submission
+        async function handleProfileFormSubmit(e) {
+            e.preventDefault();
+            showLoading();
+            
+            try {
+                const name = document.getElementById('userName').value;
+                const email = document.getElementById('userEmail').value;
+                const gender = document.getElementById('userGender').value;
+                const height = parseFloat(document.getElementById('userHeight').value);
+                const birthDate = document.getElementById('userBirthDate').value;
+                
+                // Update user data in Google Sheet
+                await gapi.client.sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: `Users!B${state.currentUser + 1}:F${state.currentUser + 1}`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        values: [
+                            [name, email, gender, height, birthDate]
+                        ]
+                    }
+                });
+                
+                // Reload user data
+                await loadUserProfile();
+                
+                alert('Profile updated successfully!');
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('Failed to update profile. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Handle app settings form submission
+        async function handleAppSettingsFormSubmit(e) {
+            e.preventDefault();
+            
+            const weightUnit = document.getElementById('weightUnit').value;
+            
+            // Save settings to localStorage
+            localStorage.setItem('health_tracker_weight_unit', weightUnit);
+            
+            alert('Settings saved successfully!');
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
