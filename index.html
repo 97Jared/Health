@@ -1249,31 +1249,34 @@
             gapi.load('client', initGoogleClient);
         }
 
-        // Initialize Google API client
-        async function initGoogleClient() {
-            try {
-                await gapi.client.init({
-                    apiKey: API_KEY,
-                    discoveryDocs: [DISCOVERY_DOC]
-                });
-                
-                // Initialize Google Identity Services
-                google.accounts.id.initialize({
+// Replace this section in your JavaScript
+function initGoogleClient() {
+    try {
+        gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC]
+        }).then(() => {
+            // Initialize Google Identity Services with proper configuration
+            google.accounts.id.initialize({
+                client_id: CLIENT_ID,
+                callback: handleCredentialResponse,
+                auto_select: false, // Don't auto-select accounts
+                cancel_on_tap_outside: true // Allow canceling by clicking outside
+            });
+
+            // Use the new Google Identity Services prompt
+            authButton.addEventListener('click', () => {
+                google.accounts.oauth2.initCodeClient({
                     client_id: CLIENT_ID,
+                    scope: SCOPES,
                     callback: handleCredentialResponse
-                });
-                
-                // Check if user is already authenticated
-                if (localStorage.getItem('health_tracker_token')) {
-                    // Attempt to use stored token
-                    handleAuthSuccess({
-                        access_token: localStorage.getItem('health_tracker_token')
-                    });
-                }
-            } catch (error) {
-                console.error('Error initializing Google API client:', error);
-            }
-        }
+                }).requestCode();
+            });
+        });
+    } catch (error) {
+        console.error('Error initializing Google API client:', error);
+    }
+}
 
         // Handle Google Identity Services credential response
         function handleCredentialResponse(response) {
